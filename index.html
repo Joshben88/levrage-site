@@ -90,12 +90,13 @@
   }
   .nav-links a:hover{color:var(--ink);}
   .nav-links a:hover::after{right:0;}
-  .nav-cta{
+  .nav-links a.nav-cta{
     font-size:14px;color:var(--ink);border:1px solid var(--line-strong);
-    padding:9px 19px;border-radius:100px;white-space:nowrap;
+    padding:11px 24px;border-radius:100px;white-space:nowrap;
     transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease);
   }
-  .nav-cta:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .nav-links a.nav-cta::after{display:none;}
+  .nav-links a.nav-cta:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
   .nav-toggle{display:none;}
 
   /* ---------- hero ---------- */
