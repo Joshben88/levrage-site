@@ -250,6 +250,11 @@
   .why-item{padding:30px 0;}
   .why-item h3{font-family:"Spectral",serif;font-size:clamp(28px,4.4vw,48px);font-weight:400;letter-spacing:-0.02em;line-height:1.06;max-width:20ch;}
   .why-item p{margin:14px 0 0;color:var(--ink-soft);font-size:17px;line-height:1.6;max-width:56ch;}
+  .has-js .why-item.reveal{opacity:0;transform:translateY(-34px);transition:opacity .6s var(--ease),transform .65s cubic-bezier(0.34,1.28,0.64,1);}
+  .why-item.reveal:nth-child(2){transition-delay:.08s;}
+  .why-item.reveal:nth-child(3){transition-delay:.16s;}
+  .why-item.reveal:nth-child(4){transition-delay:.24s;}
+  .why-item.reveal.in{opacity:1;transform:none;}
 
   /* ---------- faq ---------- */
   .faq{background:var(--paper);border-top:1px solid var(--line);}
@@ -271,7 +276,7 @@
   .testimonials{background:var(--paper-2);border-top:1px solid var(--line);}
   .tviewport{overflow:hidden;}
   .ttrack{display:flex;align-items:flex-start;transition:transform .6s var(--ease);}
-  .tslide{flex:0 0 100%;min-width:100%;}
+  .tslide{flex:0 0 100%;min-width:100%;margin:0;}
   .tquote{font-family:"Spectral",serif;font-weight:400;font-size:clamp(24px,3.5vw,42px);line-height:1.24;letter-spacing:-0.015em;color:var(--ink);margin:0;max-width:900px;}
   .tquote::before{content:"\201C";color:var(--bronze);margin-right:2px;}
   .tattr{margin-top:30px;display:flex;flex-direction:column;gap:4px;}
@@ -337,6 +342,7 @@
     .step .node::after{transform:scale(1);}
     .section-head::before{transform:scaleX(1)!important;}
     .section-head .eyebrow{opacity:1!important;clip-path:none!important;transform:none!important;}
+    .why-item.reveal{opacity:1!important;transform:none!important;}
   }
 </style>
 </head>
@@ -508,7 +514,7 @@
             </blockquote>
             <blockquote class="tslide">
               <p class="tquote">It felt less like hiring a consultant and more like adding a seasoned operator to the team — one who actually did the work alongside us.</p>
-              <footer class="tattr"><span class="tname">Stuart Macdonald</span><span class="trole">Founder & CEO · Manilife</span></footer>
+              <footer class="tattr"><span class="tname">[Name]</span><span class="trole">[Role] · [Company]</span></footer>
             </blockquote>
             <blockquote class="tslide">
               <p class="tquote">We went from firefighting to a business that runs on rhythm. The dependency on me as the founder simply lifted.</p>
