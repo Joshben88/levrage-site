@@ -318,11 +318,10 @@
   .logo-marquee{margin-top:26px;overflow:hidden;
     -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
     mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
-  .logo-track{display:flex;align-items:center;gap:60px;width:max-content;animation:logomarquee 62s linear infinite;}
-  .logo-marquee:hover .logo-track{animation-play-state:paused;}
-  .logo-item{height:30px;width:auto;flex:none;opacity:.5;transition:opacity .3s var(--ease);}
+  .logo-track{display:flex;align-items:center;gap:60px;width:max-content;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y;will-change:transform;}
+  .logo-track.dragging{cursor:grabbing;}
+  .logo-item{height:30px;width:auto;flex:none;opacity:.5;transition:opacity .3s var(--ease);-webkit-user-drag:none;}
   .logo-item:hover{opacity:.95;}
-  @keyframes logomarquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
   /* ---------- reveal animation ---------- */
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
@@ -806,42 +805,47 @@
     root.addEventListener('mouseleave',start);
     root.addEventListener('focusin',stop);
     root.addEventListener('focusout',start);
-    // swipe / drag support (touch + mouse via pointer events)
-    var vp=root.querySelector('.tviewport');
-    vp.style.touchAction='pan-y';
-    vp.style.userSelect='none';
-    vp.style.cursor='grab';
-    var dragging=false,startX=0,dx=0,base=0,vw=0;
-    vp.addEventListener('pointerdown',function(e){
-      dragging=true;startX=e.clientX;dx=0;vw=vp.clientWidth;base=-i*vw;
-      track.style.transition='none';vp.style.cursor='grabbing';stop();
-      try{vp.setPointerCapture(e.pointerId);}catch(_){}
-    });
-    vp.addEventListener('pointermove',function(e){
-      if(!dragging)return;
-      dx=e.clientX-startX;
-      track.style.transform='translateX('+(base+dx)+'px)';
-    });
-    function endDrag(){
-      if(!dragging)return;dragging=false;
-      track.style.transition='';vp.style.cursor='grab';
-      var th=Math.max(45,vw*0.15);
-      if(dx<-th)go(i+1);else if(dx>th)go(i-1);else go(i);
-      start();
-    }
-    vp.addEventListener('pointerup',endDrag);
-    vp.addEventListener('pointercancel',endDrag);
     if(reduce){ track.style.transition='none'; }
     go(0); start();
   })();
 
-  // logo marquee: duplicate track for a seamless loop
+  // draggable logo marquee: auto-scroll + grab/flick to speed through
   (function(){
     var track=document.querySelector('.logo-track');
     if(!track) return;
-    if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-      track.innerHTML += track.innerHTML;
+    track.innerHTML += track.innerHTML; // duplicate for seamless loop
+    var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var setW=0;
+    function measure(){ setW=track.scrollWidth/2; }
+    measure(); window.addEventListener('load',measure); window.addEventListener('resize',measure);
+    var pos=0, speed=reduce?0:24, dragging=false, startX=0, startPos=0;
+    var vel=0, lastX=0, lastT=0, momentum=0, prev=performance.now();
+    function frame(now){
+      var dt=Math.min((now-prev)/1000,0.05); prev=now;
+      if(!dragging){
+        if(Math.abs(momentum)>8){ pos+=momentum*dt; momentum*=Math.pow(0.92,dt*60); }
+        else { momentum=0; pos-=speed*dt; }
+      }
+      if(setW>0){ while(pos<=-setW) pos+=setW; while(pos>0) pos-=setW; }
+      track.style.transform='translateX('+pos.toFixed(2)+'px)';
+      requestAnimationFrame(frame);
     }
+    requestAnimationFrame(frame);
+    track.addEventListener('pointerdown',function(e){
+      dragging=true; startX=e.clientX; startPos=pos; momentum=0;
+      lastX=e.clientX; lastT=performance.now(); track.classList.add('dragging');
+      try{track.setPointerCapture(e.pointerId);}catch(_){}
+    });
+    track.addEventListener('pointermove',function(e){
+      if(!dragging) return;
+      pos=startPos+(e.clientX-startX);
+      var t=performance.now(), d=t-lastT;
+      if(d>0){ vel=Math.max(-3000,Math.min(3000,(e.clientX-lastX)/d*1000)); lastX=e.clientX; lastT=t; }
+    });
+    function end(){ if(!dragging) return; dragging=false; track.classList.remove('dragging'); momentum=vel; }
+    track.addEventListener('pointerup',end);
+    track.addEventListener('pointercancel',end);
+    track.addEventListener('dragstart',function(e){ e.preventDefault(); });
   })();
 </script>
 </body>
