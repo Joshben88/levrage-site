@@ -335,6 +335,12 @@
   .logo-track.dragging{cursor:grabbing;}
   .logo-item{height:30px;width:auto;flex:none;opacity:.5;transition:opacity .3s var(--ease);-webkit-user-drag:none;}
   .logo-item:hover{opacity:.95;}
+  .hero-logos{padding:2px 0 42px;}
+  .hero-logos-label{display:block;margin-bottom:22px;font-family:"Spline Sans Mono",monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-faint);}
+  .hlogo-marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);}
+  .hlogo-track{display:flex;align-items:center;gap:54px;width:max-content;animation:hlogomarquee 58s linear infinite;}
+  .hlogo-track img{height:23px;width:auto;flex:none;opacity:.4;-webkit-user-drag:none;}
+  @keyframes hlogomarquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
   /* ---------- reveal animation ---------- */
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
@@ -500,6 +506,12 @@
         <a class="btn btn-ghost" href="#process">See how it works</a>
       </div>
     </div>
+  </section>
+
+  <!-- HERO LOGO STRIP -->
+  <section class="hero-logos" aria-label="Brands worked with">
+    <div class="wrap"><span class="hero-logos-label">Worked with</span></div>
+    <div class="hlogo-marquee"><div class="hlogo-track"></div></div>
   </section>
 
   <!-- PROBLEM -->
@@ -851,6 +863,8 @@
   (function(){
     var track=document.querySelector('.logo-track');
     if(!track) return;
+    var htrack=document.querySelector('.hlogo-track');
+    if(htrack){ htrack.innerHTML = track.innerHTML + track.innerHTML; } // reuse same logos, no extra file size
     track.innerHTML += track.innerHTML; // duplicate for seamless loop
     var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var setW=0;
