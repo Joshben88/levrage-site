@@ -337,9 +337,9 @@
   .logo-item:hover{opacity:.95;}
   .hero-logos{padding:2px 0 42px;}
   .hero-logos-label{display:block;margin-bottom:22px;font-family:"Spline Sans Mono",monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-faint);}
-  .hlogo-marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);}
-  .hlogo-track{display:flex;align-items:center;gap:54px;width:max-content;will-change:transform;}
-  .hlogo-track img{height:23px;width:auto;flex:none;opacity:.4;-webkit-user-drag:none;}
+  .hlogo-marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
+  .hlogo-track{display:flex;align-items:center;gap:60px;width:max-content;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y;will-change:transform;}
+  .hlogo-track.dragging{cursor:grabbing;}
 
   /* ---------- reveal animation ---------- */
   .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
@@ -366,7 +366,7 @@
     .approach-grid{grid-template-columns:1fr;gap:28px;}
   }
   @media(max-width:680px){
-    .logo-track{gap:42px;}
+    .logo-track,.hlogo-track{gap:42px;}
     .logo-item{height:24px;}
     .track-stmt{max-width:none;}
     body{font-size:16px;}
@@ -869,51 +869,42 @@
     // exact width of one logo set (from first item of set 2), so the loop tiles perfectly
     var oneSet=function(el){ var k=Math.floor(el.children.length/2); return el.children[k].offsetLeft - el.children[0].offsetLeft; };
 
-    // hero strip: precise, seamless auto-scroll (no drag)
-    if(htrack && htrack.children.length>=2 && !reduce){
-      var hSetW=0, hpos=0, hprev=performance.now();
-      var hmeasure=function(){ hSetW=oneSet(htrack); };
-      hmeasure(); window.addEventListener('load',hmeasure); window.addEventListener('resize',hmeasure);
-      (function hframe(now){
-        var dt=Math.min((now-hprev)/1000,0.05); hprev=now;
-        hpos-=24*dt;
-        if(hSetW>0){ while(hpos<=-hSetW) hpos+=hSetW; }
-        htrack.style.transform='translateX('+hpos.toFixed(2)+'px)';
-        requestAnimationFrame(hframe);
-      })(performance.now());
-    }
-
-    var setW=0;
-    function measure(){ setW=oneSet(track); }
-    measure(); window.addEventListener('load',measure); window.addEventListener('resize',measure);
-    var pos=0, speed=reduce?0:24, dragging=false, startX=0, startPos=0;
-    var vel=0, lastX=0, lastT=0, momentum=0, prev=performance.now();
-    function frame(now){
-      var dt=Math.min((now-prev)/1000,0.05); prev=now;
-      if(!dragging){
-        if(Math.abs(momentum)>8){ pos+=momentum*dt; momentum*=Math.pow(0.92,dt*60); }
-        else { momentum=0; pos-=speed*dt; }
+    function makeMarquee(tr){
+      if(!tr || tr.children.length<2) return;
+      var setW=0;
+      var measure=function(){ setW=oneSet(tr); };
+      measure(); window.addEventListener('load',measure); window.addEventListener('resize',measure);
+      var pos=0, speed=reduce?0:24, dragging=false, startX=0, startPos=0;
+      var vel=0, lastX=0, lastT=0, momentum=0, prev=performance.now();
+      function frame(now){
+        var dt=Math.min((now-prev)/1000,0.05); prev=now;
+        if(!dragging){
+          if(Math.abs(momentum)>8){ pos+=momentum*dt; momentum*=Math.pow(0.92,dt*60); }
+          else { momentum=0; pos-=speed*dt; }
+        }
+        if(setW>0){ while(pos<=-setW) pos+=setW; while(pos>0) pos-=setW; }
+        tr.style.transform='translateX('+pos.toFixed(2)+'px)';
+        requestAnimationFrame(frame);
       }
-      if(setW>0){ while(pos<=-setW) pos+=setW; while(pos>0) pos-=setW; }
-      track.style.transform='translateX('+pos.toFixed(2)+'px)';
       requestAnimationFrame(frame);
+      tr.addEventListener('pointerdown',function(e){
+        dragging=true; startX=e.clientX; startPos=pos; momentum=0;
+        lastX=e.clientX; lastT=performance.now(); tr.classList.add('dragging');
+        try{tr.setPointerCapture(e.pointerId);}catch(_){}
+      });
+      tr.addEventListener('pointermove',function(e){
+        if(!dragging) return;
+        pos=startPos+(e.clientX-startX);
+        var t=performance.now(), d=t-lastT;
+        if(d>0){ vel=Math.max(-3000,Math.min(3000,(e.clientX-lastX)/d*1000)); lastX=e.clientX; lastT=t; }
+      });
+      function end(){ if(!dragging) return; dragging=false; tr.classList.remove('dragging'); momentum=vel; }
+      tr.addEventListener('pointerup',end);
+      tr.addEventListener('pointercancel',end);
+      tr.addEventListener('dragstart',function(e){ e.preventDefault(); });
     }
-    requestAnimationFrame(frame);
-    track.addEventListener('pointerdown',function(e){
-      dragging=true; startX=e.clientX; startPos=pos; momentum=0;
-      lastX=e.clientX; lastT=performance.now(); track.classList.add('dragging');
-      try{track.setPointerCapture(e.pointerId);}catch(_){}
-    });
-    track.addEventListener('pointermove',function(e){
-      if(!dragging) return;
-      pos=startPos+(e.clientX-startX);
-      var t=performance.now(), d=t-lastT;
-      if(d>0){ vel=Math.max(-3000,Math.min(3000,(e.clientX-lastX)/d*1000)); lastX=e.clientX; lastT=t; }
-    });
-    function end(){ if(!dragging) return; dragging=false; track.classList.remove('dragging'); momentum=vel; }
-    track.addEventListener('pointerup',end);
-    track.addEventListener('pointercancel',end);
-    track.addEventListener('dragstart',function(e){ e.preventDefault(); });
+    makeMarquee(track);
+    makeMarquee(htrack);
   })();
 </script>
 </body>
