@@ -874,7 +874,7 @@
       var setW=0;
       var measure=function(){ setW=oneSet(tr); };
       measure(); window.addEventListener('load',measure); window.addEventListener('resize',measure);
-      var pos=0, speed=reduce?0:24, dragging=false, startX=0, startPos=0;
+      var pos=0, speed=reduce?0:45, dragging=false, startX=0, startPos=0;
       var vel=0, lastX=0, lastT=0, momentum=0, prev=performance.now();
       function frame(now){
         var dt=Math.min((now-prev)/1000,0.05); prev=now;
